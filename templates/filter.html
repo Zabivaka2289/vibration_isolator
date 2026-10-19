@@ -1,0 +1,52 @@
+{# Фильтр по жёсткости: GET /filter?min_stiffness=..&max_stiffness=.. #}
+{% extends "base.html" %}
+{% from "_card.html" import vibration_isolator_card %}
+{% set nav_active = 'grid' %}
+
+{% block title %}Фильтр{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Фильтр</h1>
+    <a href="/" class="header-link">← Назад</a>
+</header>
+
+<main class="screen-content">
+    <div class="filter-bar">
+        <form action="/filter" method="get" class="filter-form">
+            <div class="filter-group">
+                <label>Мин. жёсткость: <span id="minVal">{{ min_stiffness }}</span> Н/мм</label>
+                <input type="range" name="min_stiffness" min="20" max="80" value="{{ min_stiffness }}"
+                       oninput="document.getElementById('minVal').textContent = this.value">
+            </div>
+            <div class="filter-group">
+                <label>Макс. жёсткость: <span id="maxVal">{{ max_stiffness }}</span> Н/мм</label>
+                <input type="range" name="max_stiffness" min="20" max="80" value="{{ max_stiffness }}"
+                       oninput="document.getElementById('maxVal').textContent = this.value">
+            </div>
+            <button type="submit" class="filter-btn">Применить</button>
+        </form>
+    </div>
+
+    <div class="result-count">Найдено: {{ vibration_isolators|length }}</div>
+
+    <div class="grid-container">
+        {% set back_url = '/filter?min_stiffness=' ~ min_stiffness ~ '&max_stiffness=' ~ max_stiffness %}
+        {% for item in vibration_isolators %}
+            {{ vibration_isolator_card(item, likes_count, liked_ids, back_url) }}
+        {% else %}
+            <div class="empty">Нет виброизоляторов в этом диапазоне</div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleDescription(btn) {
+        const box = btn.parentElement;
+        const opened = box.classList.toggle('open');
+        btn.textContent = opened ? 'Скрыть' : 'Ещё';
+    }
+</script>
+{% endblock %}

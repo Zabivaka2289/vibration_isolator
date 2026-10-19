@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Фиксированная ширина под один телефон (390×844, iPhone 12/13/14).
+         Адаптивности нет: страница НЕ растягивается на весь экран. -->
+    <meta name="viewport" content="width=390">
+    <title>{% block title %}Виброизоляция{% endblock %}</title>
+    <!-- Один и тот же файл стилей на ВСЕХ страницах (раньше были разные ?v=, из-за чего
+         на «Добавить» подтягивалась старая версия CSS из кэша) -->
+    <link rel="stylesheet" href="/static/css/style.css?v=20">
+</head>
+<body>
+    <!-- .phone — «экран телефона» фиксированного размера, всё содержимое внутри него -->
+    <div class="phone {% block phone_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+
+        <!-- Нижняя навигация. Иконки — SVG (а не эмодзи), поэтому видны и у активной,
+             и у неактивной кнопки на любой странице -->
+        {% set active = nav_active | default('') %}
+        <nav class="bottom-nav">
+            <a href="/feed" class="nav-item {% if active == 'feed' %}active{% endif %}">
+                <svg class="nav-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+                <span class="nav-label">Лента</span>
+            </a>
+            <a href="/add" class="nav-item {% if active == 'add' %}active{% endif %}">
+                <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                <span class="nav-label">Добавить</span>
+            </a>
+            <a href="/" class="nav-item {% if active == 'grid' %}active{% endif %}">
+                <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+                <span class="nav-label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

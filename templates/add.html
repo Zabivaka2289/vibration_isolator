@@ -1,0 +1,94 @@
+{# «Добавить» — форма нового виброизолятора. Отправляется POST /add и сохраняется в БД.
+   Обязательные поля помечены *, необязательные — подписью «необязательно». #}
+{% extends "base.html" %}
+{% set nav_active = 'add' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Добавить</h1>
+    <a href="/" class="header-link">← Назад</a>
+</header>
+
+<main class="screen-content">
+    <form class="add-form" action="/add" method="post" enctype="multipart/form-data">
+        <div class="add-section">
+            <div class="add-section-title">Медиа <span class="optional">необязательно</span></div>
+            <div class="add-media-grid">
+                <!-- Кнопка-картинка «Фото». Картинка есть в ОБОИХ состояниях:
+                     до выбора — иконка, после выбора — превью выбранного фото -->
+                <label class="add-media-box" id="photoBox">
+                    <img class="media-icon" src="/static/img/icon_photo.svg" alt="">
+                    <img class="media-preview" id="photoPreview" alt="">
+                    <span class="media-caption" id="photoCaption">Фото</span>
+                    <input type="file" name="photo" accept="image/*" id="photoInput" hidden>
+                </label>
+                <!-- Кнопка-картинка «Видео» — так же: иконка до выбора, кадр видео после -->
+                <label class="add-media-box" id="videoBox">
+                    <img class="media-icon" src="/static/img/icon_video.svg" alt="">
+                    <video class="media-preview" id="videoPreview" muted playsinline></video>
+                    <span class="media-caption" id="videoCaption">Видео</span>
+                    <input type="file" name="video" accept="video/*" id="videoInput" hidden>
+                </label>
+            </div>
+        </div>
+
+        <div class="add-section">
+            <div class="add-section-title">Параметры</div>
+
+            <label class="add-label">Название *</label>
+            <input class="add-field" type="text" name="title" placeholder="Например: Пружинный АР-120" required maxlength="100">
+
+            <label class="add-label">Тип виброизолятора *</label>
+            <select class="add-field" name="type" required>
+                {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+            </select>
+
+            <div class="add-row">
+                <div>
+                    <label class="add-label">Жёсткость, Н/мм *</label>
+                    <input class="add-field" type="number" name="stiffness" placeholder="45" min="1" required>
+                </div>
+                <div>
+                    <label class="add-label">Собств. частота, Гц *</label>
+                    <input class="add-field" type="number" name="freq" placeholder="4.2" step="0.1" min="0.1" required>
+                </div>
+            </div>
+
+            <label class="add-label">Описание <span class="optional">необязательно</span></label>
+            <textarea class="add-field textarea" name="description" maxlength="500" placeholder="Описание виброизолятора..."></textarea>
+        </div>
+
+        <button type="submit" class="add-submit-btn">Опубликовать</button>
+        <div class="add-note">* — обязательные поля. Запись сохраняется в базу данных.</div>
+    </form>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Показываем превью выбранного файла ВНУТРИ кнопки, сама кнопка не пропадает.
+    // Фото и видео независимы: выбор одного не стирает превью другого.
+    function bindPreview(inputId, boxId, previewId, captionId, label) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', function () {
+            const file = input.files[0];
+            const box = document.getElementById(boxId);
+            const preview = document.getElementById(previewId);
+            const caption = document.getElementById(captionId);
+            if (!file) {               // выбор отменён — возвращаем иконку
+                box.classList.remove('filled');
+                preview.removeAttribute('src');
+                caption.textContent = label;
+                return;
+            }
+            preview.src = URL.createObjectURL(file);
+            box.classList.add('filled');
+            caption.textContent = label + ' ✓ (заменить)';
+        });
+    }
+    bindPreview('photoInput', 'photoBox', 'photoPreview', 'photoCaption', 'Фото');
+    bindPreview('videoInput', 'videoBox', 'videoPreview', 'videoCaption', 'Видео');
+</script>
+{% endblock %}

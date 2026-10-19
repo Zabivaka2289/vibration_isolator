@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Не найдено{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Ошибка 404</h1>
+    <a href="/" class="header-link">← На главную</a>
+</header>
+<main class="screen-content">
+    <div class="empty">{{ message }}</div>
+</main>
+{% endblock %}

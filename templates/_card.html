@@ -1,0 +1,46 @@
+{# Макрос карточки виброизолятора для «Плитки» и «Фильтра».
+   item        — объект VibrationIsolator из БД
+   likes_count — словарь {id: число лайков}
+   liked_ids   — id, лайкнутые текущим пользователем
+   back_url    — куда вернуться после лайка / удаления #}
+{% macro vibration_isolator_card(item, likes_count, liked_ids, back_url) %}
+<div class="grid-card">
+    <a href="/vibration_isolator/{{ item.id }}" class="grid-card-link">
+        <div class="card-image">
+            <img src="{{ item.image_url or '/static/img/no_image.svg' }}" alt="{{ item.title }}" loading="lazy">
+        </div>
+        <div class="card-body">
+            <h3>{{ item.title }}</h3>
+            <p class="card-params">
+                <span class="param">{{ item.stiffness }} Н/мм</span>
+                <span class="param">{{ item.freq }} Гц</span>
+            </p>
+            <div class="card-type">{{ item.type }}</div>
+        </div>
+    </a>
+    {% if item.description %}
+    <div class="card-description">
+        <span class="desc-short">{{ item.description[:60] }}{% if item.description|length > 60 %}…{% endif %}</span>
+        <span class="desc-full">{{ item.description }}</span>
+        {% if item.description|length > 60 %}
+        <button type="button" class="desc-more-btn" onclick="toggleDescription(this)">Ещё</button>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="card-actions">
+        <!-- Лайк (ORM): повторное нажатие снимает лайк -->
+        <form action="/vibration_isolator/{{ item.id }}/like" method="post">
+            <input type="hidden" name="user_id" value="1">
+            <input type="hidden" name="next" value="{{ back_url }}">
+            <button type="submit" class="like-btn-small {% if item.id in liked_ids %}liked{% endif %}">
+                {% if item.id in liked_ids %}♥{% else %}♡{% endif %} {{ likes_count.get(item.id, 0) }}
+            </button>
+        </form>
+        <!-- Мягкое удаление (курсор / сырой SQL) -->
+        <form action="/vibration_isolator/{{ item.id }}/delete" method="post">
+            <input type="hidden" name="next" value="{{ back_url }}">
+            <button type="submit" class="delete-btn-small">Удалить</button>
+        </form>
+    </div>
+</div>
+{% endmacro %}

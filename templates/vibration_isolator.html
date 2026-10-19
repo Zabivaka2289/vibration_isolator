@@ -1,0 +1,106 @@
+{# «Лента» — одна карточка виброизолятора на весь экран телефона.
+   vibration_isolator — строка из БД (получена курсором по id)
+   next_id            — id следующей карточки для кнопки «Далее»
+   likes_count / is_liked — лайки из таблицы likes #}
+{% extends "base.html" %}
+{% set nav_active = 'feed' %}
+{% set item = vibration_isolator %}
+
+{% block title %}{{ item.title }}{% endblock %}
+{% block phone_class %}feed{% endblock %}
+
+{% block content %}
+<header class="detail-header">
+    <a href="/" class="home-link">← Назад</a>
+    <span class="header-counter">{{ position }} / {{ total }}</span>
+</header>
+
+<div class="feed-card">
+    <!-- Карусель: слайд 1 — фото, слайд 2 — видео -->
+    <div class="media-carousel">
+        <div class="media-track" id="mediaTrack">
+            <div class="media-slide">
+                <img src="{{ item.image_url or '/static/img/no_image.svg' }}" alt="{{ item.title }}">
+            </div>
+            <div class="media-slide">
+                {% if item.video_url %}
+                <video id="mainVideo" loop muted playsinline>
+                    <source src="{{ item.video_url }}" type="video/mp4">
+                </video>
+                {% else %}
+                <img src="/static/img/no_video.svg" alt="Видео нет">
+                {% endif %}
+            </div>
+        </div>
+        <button type="button" class="carousel-arrow left" onclick="changeMedia(-1)">‹</button>
+        <button type="button" class="carousel-arrow right" onclick="changeMedia(1)">›</button>
+        <div class="carousel-dots" id="carouselDots">
+            <span class="active"></span><span></span>
+        </div>
+    </div>
+
+    <!-- Кнопки справа: лайк и «Далее» -->
+    <div class="side-actions">
+        <form action="/vibration_isolator/{{ item.id }}/like" method="post">
+            <input type="hidden" name="user_id" value="1">
+            <input type="hidden" name="next" value="/vibration_isolator/{{ item.id }}">
+            <button type="submit" class="side-btn {% if is_liked %}liked{% endif %}">
+                <span class="side-icon">{% if is_liked %}♥{% else %}♡{% endif %}</span>
+                <span class="side-label">{{ likes_count }}</span>
+            </button>
+        </form>
+        <a href="/vibration_isolator/{{ next_id }}" class="side-btn">
+            <span class="side-icon">↓</span>
+            <span class="side-label">Далее</span>
+        </a>
+    </div>
+
+    <!-- Описание — СПРАВА (выравнивание по правому краю) -->
+    <div class="description-overlay">
+        <div class="desc-title">{{ item.title }}</div>
+        <div class="desc-params">
+            <span>Жёсткость: {{ item.stiffness }} Н/мм</span>
+            <span>Частота: {{ item.freq }} Гц</span>
+        </div>
+        {% if item.description %}
+        <div class="desc-text-wrapper" id="descBox">
+            <span class="desc-short">{{ item.description[:80] }}{% if item.description|length > 80 %}…{% endif %}</span>
+            <span class="desc-full">{{ item.description }}</span>
+            {% if item.description|length > 80 %}
+            <button type="button" class="desc-more-btn" onclick="toggleDescription(this)">Ещё</button>
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="desc-type">{{ item.type }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ===== Карусель фото/видео =====
+    let currentMediaIndex = 0;
+    function changeMedia(direction) {
+        currentMediaIndex = (currentMediaIndex + direction + 2) % 2;
+        document.getElementById('mediaTrack').style.transform =
+            'translateX(-' + (currentMediaIndex * 100) + '%)';
+        document.querySelectorAll('#carouselDots span').forEach((dot, i) =>
+            dot.classList.toggle('active', i === currentMediaIndex));
+        const video = document.getElementById('mainVideo');
+        if (video) { currentMediaIndex === 1 ? video.play() : video.pause(); }
+    }
+
+    // ===== «Ещё» / «Скрыть» для описания =====
+    function toggleDescription(btn) {
+        const opened = btn.parentElement.classList.toggle('open');
+        btn.textContent = opened ? 'Скрыть' : 'Ещё';
+    }
+
+    // ===== Клавиатура: ↓ — следующая карточка, ←/→ — фото/видео =====
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { window.location.href = '/vibration_isolator/{{ next_id }}'; }
+        if (e.key === 'ArrowLeft') { changeMedia(-1); }
+        if (e.key === 'ArrowRight') { changeMedia(1); }
+    });
+</script>
+{% endblock %}

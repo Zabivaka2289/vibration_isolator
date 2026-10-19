@@ -1,0 +1,44 @@
+{# «Плитка» — каталог виброизоляторов с поиском по названию #}
+{% extends "base.html" %}
+{% from "_card.html" import vibration_isolator_card %}
+{% set nav_active = 'grid' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Виброизоляция</h1>
+    <a href="/filter?min_stiffness=20&max_stiffness=80" class="header-link">Фильтр</a>
+</header>
+
+<main class="screen-content">
+    <!-- Поиск: GET /?search=... → в БД WHERE title ILIKE '%...%' -->
+    <form class="search-form" action="/" method="get">
+        <input type="text" name="search" placeholder="Поиск по названию" value="{{ search }}">
+        <button type="submit">Найти</button>
+    </form>
+
+    {% if search %}
+    <div class="result-count">Найдено: {{ vibration_isolators|length }} · <a href="/">сбросить</a></div>
+    {% endif %}
+
+    <div class="grid-container">
+        {% for item in vibration_isolators %}
+            {{ vibration_isolator_card(item, likes_count, liked_ids, ('/?search=' ~ (search|urlencode) if search else '/')) }}
+        {% else %}
+            <div class="empty">Ничего не найдено</div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Кнопка «Ещё» в карточке: показывает / скрывает полное описание
+    function toggleDescription(btn) {
+        const box = btn.parentElement;
+        const opened = box.classList.toggle('open');
+        btn.textContent = opened ? 'Скрыть' : 'Ещё';
+    }
+</script>
+{% endblock %}
