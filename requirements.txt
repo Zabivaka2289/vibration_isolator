@@ -10,3 +10,4 @@ asyncpg
 pydantic-settings
 python-dotenv
 minio
+redis

@@ -19,6 +19,7 @@ from db.base import Base
 from models.vibration_isolator import VibrationIsolator  # noqa: F401
 from models.user import User  # noqa: F401
 from models.like import Like  # noqa: F401
+from models.vibration_isolator_request import VibrationIsolatorRequest  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

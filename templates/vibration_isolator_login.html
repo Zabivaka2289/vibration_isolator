@@ -1,0 +1,29 @@
+{# vibration_isolator: страница входа (аналог login.hbs) #}
+{% extends "vibration_isolator_base.html" %}
+{% set nav_active = 'profile' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Вход</h1>
+    <a href="/" class="header-link">← Каталог</a>
+</header>
+
+<main class="screen-content">
+    {% if registered %}<div class="auth-ok">Регистрация прошла успешно — войдите.</div>{% endif %}
+    {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+
+    <form class="add-form" method="post" action="/login">
+        <div class="add-section">
+            <label class="add-label">Email *</label>
+            <input class="add-field" type="email" name="email" value="{{ email }}" placeholder="user@test.com" required>
+
+            <label class="add-label">Пароль *</label>
+            <input class="add-field" type="password" name="password" placeholder="•••" required>
+        </div>
+        <button type="submit" class="add-submit-btn">Войти</button>
+        <div class="add-note">Нет аккаунта? <a class="auth-link" href="/register">Регистрация</a></div>
+    </form>
+</main>
+{% endblock %}

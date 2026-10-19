@@ -3,6 +3,8 @@
 
   ЛР-2: HTML-сайт            → http://127.0.0.1:8001/
   ЛР-3: REST API (JSON)      → http://127.0.0.1:8001/api/vibration_isolators
+  ЛР-4: вход / профиль       → http://127.0.0.1:8001/login , /profile
+        API сессий           → /api/vibration_isolator_auth/... , /api/vibration_isolator_requests
         документация Swagger → http://127.0.0.1:8001/docs
 
 Запуск:  python main.py
@@ -16,8 +18,16 @@ import uvicorn
 
 from api.vibration_isolator_handlers import vibration_isolator_router
 from modules.vibration_isolator.controllers.vibration_isolator_controller import vibration_isolator_api_router
+from modules.vibration_isolator_auth.vibration_isolator_auth_controller import vibration_isolator_auth_router
+from modules.vibration_isolator_request.vibration_isolator_request_controller import vibration_isolator_request_router
+from api.vibration_isolator_auth_pages import vibration_isolator_auth_pages_router
 
-vibration_isolator_app = FastAPI(title="Виброизоляция оборудования (vibration_isolator)")
+vibration_isolator_app = FastAPI(
+    title="Виброизоляция оборудования (vibration_isolator)",
+    description=("Сессионная аутентификация через куки. Выполните POST /api/vibration_isolator_auth/login — "
+                 "браузер сохранит куку vibration_isolator_session_id и будет отправлять её сам. "
+                 "Для Postman: скопируйте значение куки из Set-Cookie."),
+)
 
 # Статика: CSS, иконки и файлы, загруженные через «Добавить».
 # Фото 5 исходных виброизоляторов лежат в MinIO (http://localhost:9000/media/)
@@ -28,6 +38,11 @@ vibration_isolator_app.include_router(vibration_isolator_router)
 
 # ЛР-3: REST API с общим префиксом /api (как app.setGlobalPrefix('api') в NestJS)
 vibration_isolator_app.include_router(vibration_isolator_api_router, prefix="/api")
+
+# ЛР-4: сессии и куки — API входа/выхода, заявки и HTML-страницы /login, /register, /profile
+vibration_isolator_app.include_router(vibration_isolator_auth_router, prefix="/api")
+vibration_isolator_app.include_router(vibration_isolator_request_router, prefix="/api")
+vibration_isolator_app.include_router(vibration_isolator_auth_pages_router)
 
 
 @vibration_isolator_app.exception_handler(RequestValidationError)

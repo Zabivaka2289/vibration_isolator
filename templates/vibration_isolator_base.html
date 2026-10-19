@@ -31,6 +31,11 @@
                 <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
                 <span class="nav-label">Плитка</span>
             </a>
+            <!-- ЛР-4: профиль (без входа откроется страница логина) -->
+            <a href="/profile" class="nav-item {% if active == 'profile' %}active{% endif %}">
+                <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                <span class="nav-label">Профиль</span>
+            </a>
         </nav>
     </div>
     {% block scripts %}{% endblock %}

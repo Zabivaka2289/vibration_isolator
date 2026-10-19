@@ -197,6 +197,7 @@ body {
     z-index: 100;
 }
 .nav-item {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -342,6 +343,7 @@ body {
 .add-section-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; }
 .optional { font-size: 10px; font-weight: 400; color: #888; margin-left: 4px; }
 
+/* Фото и Видео — друг под другом (одна колонка) */
 .add-media-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .add-media-box {
     position: relative;
@@ -418,3 +420,37 @@ body {
     font-weight: 600;
     cursor: pointer;
 }
+
+/* ===== vibration_isolator: ВХОД / РЕГИСТРАЦИЯ / ПРОФИЛЬ (ЛР-4) ===== */
+.auth-error, .auth-ok {
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.auth-error { background: rgba(255,71,87,0.12); border: 1px solid var(--like); color: #ff8a95; }
+.auth-ok { background: rgba(46,204,113,0.12); border: 1px solid #2ecc71; color: #7be3a5; }
+.auth-link { color: var(--accent); }
+.logout-btn { cursor: pointer; font-family: inherit; }
+
+.profile-card { margin-bottom: 12px; }
+.profile-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.profile-row:last-child { border-bottom: none; }
+.profile-row span { color: var(--muted); }
+.role-badge { padding: 1px 8px; border-radius: 10px; background: var(--line); font-size: 11px; }
+.role-badge.moderator { background: var(--accent); color: var(--bg); }
+
+form.add-section { display: block; margin-bottom: 12px; }
+form.add-section .add-submit-btn { margin-top: 4px; }
+
+.request-item { border-top: 1px solid var(--line); padding: 10px 0; }
+.request-item:first-of-type { border-top: none; }
+.request-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+.request-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.status-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.status-badge.pending { background: #3A3A3A; color: #ddd; }
+.status-badge.approved { background: #1f6f43; color: #c9f5da; }
+.status-badge.rejected { background: #7a2530; color: #ffd0d5; }
+.status-form { display: flex; gap: 6px; margin-top: 8px; }
+.status-btn { flex: 1; padding: 5px 0; font-size: 10px; border-radius: 6px; border: 1px solid #3A3A3A; background: transparent; color: #ccc; cursor: pointer; }
+.status-btn.current { border-color: var(--accent); color: var(--accent); }

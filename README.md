@@ -217,3 +217,60 @@ docker-compose up -d                # PostgreSQL + Adminer
 python main.py
 ```
 Postman: File → Import → `postman/vibration_isolator.postman_collection.json` — готовые 12 запросов.
+
+---
+
+# ЛР-4. Сессии и куки (FastAPI вместо NestJS)
+
+Регистрация и вход через **куку сессии**, сессии хранятся в **Redis**, ролевая модель **user / moderator**,
+заявки автоматически привязываются к автору из сессии. HTML-демо — Jinja2 (вместо Handlebars), API — в Swagger `/docs`.
+
+## Как работает сессия
+1. `POST /api/vibration_isolator_auth/login` — сервер проверяет email и пароль (хеш PBKDF2 из БД).
+2. Генерирует случайный `sessionId` и пишет в Redis: `vibration_isolator_session:<sessionId> → <userId>`, TTL 1 час.
+3. Отвечает заголовком `Set-Cookie: vibration_isolator_session_id=<sessionId>; HttpOnly; SameSite=lax; Max-Age=3600`.
+4. Браузер / Postman сам отправляет куку в каждом запросе; «guard» находит сессию в Redis → пользователь.
+5. `logout` удаляет запись из Redis — кука сразу перестаёт работать (401).
+
+## Соответствие NestJS → FastAPI
+
+| NestJS (методичка) | FastAPI (этот проект) |
+|---|---|
+| `User` / `Request` (Sequelize) | `models/user.py`, `models/vibration_isolator_request.py` (SQLAlchemy) + миграция `0002` |
+| `SessionService` (ioredis) | `modules/vibration_isolator_session/vibration_isolator_session_service.py` (redis-py) |
+| `UserService` | `modules/vibration_isolator_user/vibration_isolator_user_service.py` |
+| `AuthService` | `modules/vibration_isolator_auth/vibration_isolator_auth_service.py` |
+| `AuthController` + `res.cookie(...)` | `modules/vibration_isolator_auth/vibration_isolator_auth_controller.py` (`response.set_cookie`) |
+| `SessionGuard` + `@UseGuards` | `modules/vibration_isolator_auth/vibration_isolator_session_guard.py` (`Depends`) |
+| `RequestService` / `RequestController` | `modules/vibration_isolator_request/*` |
+| `login.hbs`, `profile.hbs`, `AppController` | `templates/vibration_isolator_login.html`, `_register.html`, `_profile.html`, `api/vibration_isolator_auth_pages.py` |
+| `cookie-parser` | встроено: `request.cookies` |
+| Swagger `.addCookieAuth('sessionId')` | `APIKeyCookie` → кнопка **Authorize** в `/docs` |
+
+## Маршруты API
+
+| Метод | Адрес | Доступ |
+|---|---|---|
+| POST | `/api/vibration_isolator_auth/register` | все, ответ 201 (повтор email → 409) |
+| POST | `/api/vibration_isolator_auth/login` | все, ставит куку |
+| POST | `/api/vibration_isolator_auth/logout` | удаляет сессию и куку |
+| GET | `/api/vibration_isolator_auth/me` | нужна кука (иначе 401) |
+| POST | `/api/vibration_isolator_requests` | нужна кука; `author_id` из сессии |
+| GET | `/api/vibration_isolator_requests` | user — свои, moderator — все |
+| GET | `/api/vibration_isolator_requests/{id}` | своя или moderator, иначе 403 |
+| PUT | `/api/vibration_isolator_requests/{id}/status` | только moderator, иначе 403 |
+
+HTML: `/login`, `/register`, `/profile` (без куки → редирект на `/login`), кнопка «Выход».
+
+## Учётные записи
+- Модератор (создаётся миграцией из `test_user`): **moderator@vibration.ru / 123**
+- Обычный пользователь — регистрируется сам (роль `user`).
+
+## Запуск
+```bash
+pip install -r requirements.txt   # добавилась библиотека redis
+docker-compose up -d              # + контейнер vibration_isolator_redis (порт 56379)
+alembic upgrade head              # миграция 0002: поля users + таблица заявок
+python main.py
+```
+Postman: импорт `postman/vibration_isolator_lr4.postman_collection.json` (13 запросов по порядку).

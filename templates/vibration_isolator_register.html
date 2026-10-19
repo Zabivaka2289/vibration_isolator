@@ -1,0 +1,31 @@
+{# vibration_isolator: страница регистрации #}
+{% extends "vibration_isolator_base.html" %}
+{% set nav_active = 'profile' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Регистрация</h1>
+    <a href="/login" class="header-link">← Вход</a>
+</header>
+
+<main class="screen-content">
+    {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+
+    <form class="add-form" method="post" action="/register">
+        <div class="add-section">
+            <label class="add-label">Email *</label>
+            <input class="add-field" type="email" name="email" value="{{ email }}" placeholder="user@test.com" required>
+
+            <label class="add-label">Пароль * <span class="optional">не короче 3 символов</span></label>
+            <input class="add-field" type="password" name="password" required minlength="3">
+
+            <label class="add-label">Имя <span class="optional">необязательно</span></label>
+            <input class="add-field" type="text" name="name" value="{{ name }}" placeholder="Test User">
+        </div>
+        <button type="submit" class="add-submit-btn">Зарегистрироваться</button>
+        <div class="add-note">Новые пользователи получают роль user.</div>
+    </form>
+</main>
+{% endblock %}

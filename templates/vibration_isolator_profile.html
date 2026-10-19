@@ -1,0 +1,69 @@
+{# vibration_isolator: профиль (аналог profile.hbs) + заявки пользователя #}
+{% extends "vibration_isolator_base.html" %}
+{% set nav_active = 'profile' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Профиль</h1>
+    <form method="post" action="/logout">
+        <button type="submit" class="header-link logout-btn">Выход</button>
+    </form>
+</header>
+
+<main class="screen-content">
+    {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+
+    <div class="add-section profile-card">
+        <div class="profile-row"><span>Имя</span><b>{{ user.name or '—' }}</b></div>
+        <div class="profile-row"><span>Email</span><b>{{ user.email }}</b></div>
+        <div class="profile-row"><span>Роль</span>
+            <b class="role-badge {{ user.role }}">{{ 'модератор' if user.role == 'moderator' else 'пользователь' }}</b>
+        </div>
+    </div>
+
+    <!-- Новая заявка: автор подставится из сессии автоматически -->
+    <form class="add-section" method="post" action="/profile/requests">
+        <div class="add-section-title">Новая заявка</div>
+        <label class="add-label">Заголовок *</label>
+        <input class="add-field" type="text" name="title" required minlength="3" maxlength="200"
+               placeholder="Заявка на виброизолятор для насоса">
+        <label class="add-label">Виброизолятор <span class="optional">необязательно</span></label>
+        <select class="add-field" name="vibration_isolator_id">
+            <option value="">— не выбран —</option>
+            {% for item in vibration_isolators %}<option value="{{ item.id }}">{{ item.title }}</option>{% endfor %}
+        </select>
+        <label class="add-label">Описание <span class="optional">необязательно</span></label>
+        <textarea class="add-field textarea" name="description" maxlength="1000"></textarea>
+        <button type="submit" class="add-submit-btn">Отправить заявку</button>
+    </form>
+
+    <div class="add-section">
+        <div class="add-section-title">
+            {{ 'Все заявки' if user.role == 'moderator' else 'Мои заявки' }} ({{ vibration_isolator_requests|length }})
+        </div>
+        {% for r in vibration_isolator_requests %}
+        <div class="request-item">
+            <div class="request-head">
+                <b>#{{ r.id }} {{ r.title }}</b>
+                <span class="status-badge {{ r.status }}">{{ status_labels[r.status] }}</span>
+            </div>
+            {% if r.vibration_isolator_id %}<div class="request-meta">Виброизолятор: {{ isolator_titles.get(r.vibration_isolator_id, '#' ~ r.vibration_isolator_id) }}</div>{% endif %}
+            {% if r.description %}<div class="request-meta">{{ r.description }}</div>{% endif %}
+            {% if user.role == 'moderator' %}
+            <div class="request-meta">Автор: id {{ r.author_id }}</div>
+            <form class="status-form" method="post" action="/profile/requests/{{ r.id }}/status">
+                {% for s in statuses %}
+                <button type="submit" name="status" value="{{ s }}"
+                        class="status-btn {{ s }} {% if r.status == s %}current{% endif %}">{{ status_labels[s] }}</button>
+                {% endfor %}
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty">Заявок пока нет</div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

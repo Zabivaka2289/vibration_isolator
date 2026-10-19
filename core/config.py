@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     MINIO_BUCKET: str = "vibration-isolator"      # бакет для картинок (в имени бакета нельзя «_»)
     MINIO_USE_SSL: bool = False
 
+    # ---- vibration_isolator: Redis для сессий (ЛР-4) ----
+    REDIS_HOST: str = "127.0.0.1"
+    REDIS_PORT: int = 56379                       # необычный порт, чтобы не мешать другим Redis
+    VIBRATION_ISOLATOR_SESSION_TTL: int = 3600    # время жизни сессии, секунд (1 час)
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
