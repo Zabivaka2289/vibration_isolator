@@ -1,0 +1,328 @@
+{
+  "info": {
+    "name": "vibration_isolator REST API (ЛР-3)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. GET все виброизоляторы",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "2. POST создать виброизолятор",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Тестовый ВИ-60\",\n  \"type\": \"Пружинный\",\n  \"stiffness\": 60,\n  \"freq\": 4.8,\n  \"description\": \"этот объект должен стать 6 в БД\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. POST ошибка валидации",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"ab\",\n  \"type\": \"Деревянный\",\n  \"stiffness\": -5,\n  \"freq\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "4. GET с фильтрами",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators?search=Пружин&type=Пружинный&min_stiffness=30&max_stiffness=80",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators"
+          ],
+          "query": [
+            {
+              "key": "search",
+              "value": "Пружин"
+            },
+            {
+              "key": "type",
+              "value": "Пружинный"
+            },
+            {
+              "key": "min_stiffness",
+              "value": "30"
+            },
+            {
+              "key": "max_stiffness",
+              "value": "80"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "5. GET один виброизолятор",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/2",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "2"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "6. PUT обновить",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/6",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "6"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Тестовый ВИ-75\",\n  \"stiffness\": 75,\n  \"freq\": 4.1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "7. GET проверить обновление",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/6",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "6"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "8. DELETE мягкое удаление",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/6",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "6"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "9. GET удалённый → 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/6",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "6"
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "10. PUT удалённый → 400",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/6",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "6"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Нельзя\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "11. GET вместе с удалёнными",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators?include_deleted=true",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators"
+          ],
+          "query": [
+            {
+              "key": "include_deleted",
+              "value": "true"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "12. POST картинка в MinIO",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/vibration_isolators/2/image",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "vibration_isolators",
+            "2",
+            "image"
+          ]
+        },
+        "description": "Body → form-data → ключ image, тип File → Select Files",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": []
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8001"
+    }
+  ]
+}

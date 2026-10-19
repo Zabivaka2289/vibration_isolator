@@ -161,3 +161,59 @@ PostgreSQL в Docker, `.env` + pydantic-settings, SQLAlchemy (асинхронн
 поиск по названию, лайки в таблице `likes` (раньше были в localStorage браузера),
 мягкое удаление через сырой SQL, сохранение новой записи со страницы «Добавить»
 (раньше была только имитация через `alert`), страница 404.
+
+---
+
+# ЛР-3. REST API на FastAPI (по мотивам методички NestJS)
+
+REST API для виброизоляторов: полный CRUD, фильтры, мягкое удаление, загрузка картинок в MinIO.
+Работает в том же приложении и с той же БД, что и сайт из ЛР-2, под префиксом `/api`.
+Новых таблиц и полей нет (в т.ч. нет `created_at`), поэтому новая миграция не нужна.
+
+## Соответствие NestJS → FastAPI
+
+| NestJS (методичка) | FastAPI (этот проект) |
+|---|---|
+| `@Entity()` `product.entity.ts` | `models/vibration_isolator.py` (SQLAlchemy) |
+| `TypeORMProductsRepository` | `modules/vibration_isolator/repositories/vibration_isolator_repository.py` |
+| `ProductsService` (`@Injectable`) | `modules/vibration_isolator/services/vibration_isolator_service.py` |
+| `MinioSimpleService` | `modules/vibration_isolator/services/vibration_isolator_minio_service.py` |
+| `ProductsController` (`@Controller`) | `modules/vibration_isolator/controllers/vibration_isolator_controller.py` (`APIRouter`) |
+| `ProductsModule` (`@Module`, providers) | `modules/vibration_isolator/vibration_isolator_module.py` (`Depends`) |
+| DTO + `class-validator` | `modules/vibration_isolator/dto/*.py` (Pydantic) |
+| `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`) | Pydantic `extra="forbid"` + обработчик ошибок → 400 в `main.py` |
+| `@Exclude()` для `isDeleted` | поля `is_deleted` просто нет в `VibrationIsolatorResponseDto` |
+| `app.setGlobalPrefix('api')` | `include_router(..., prefix="/api")` |
+| `ParseIntPipe` | `vibration_isolator_id: int` в пути |
+| `ConfigModule` / `.env` | `core/config.py` (pydantic-settings) / `.env` |
+
+## Маршруты
+
+| Метод | Адрес | Что делает |
+|---|---|---|
+| GET | `/api/vibration_isolators` | список, фильтры: `search`, `type`, `min_stiffness`, `max_stiffness`, `min_freq`, `max_freq`, `include_deleted` |
+| GET | `/api/vibration_isolators/{id}` | один виброизолятор (удалённый → 404) |
+| POST | `/api/vibration_isolators` | создать (JSON), ответ 201 |
+| PUT | `/api/vibration_isolators/{id}` | обновить переданные поля (удалённый → 400) |
+| DELETE | `/api/vibration_isolators/{id}` | мягкое удаление (`is_deleted = true`) |
+| POST | `/api/vibration_isolators/{id}/image` | загрузить картинку в MinIO (form-data, ключ `image`), старая удаляется |
+
+Документация Swagger: http://127.0.0.1:8001/docs
+
+## Бизнес-правила
+1. Название ≥ 3 символов, тип — «Пружинный» или «Резинометаллический», жёсткость и частота > 0.
+2. Лишние поля в JSON запрещены (400).
+3. Удаление только мягкое; удалённые не видны в списке и по id.
+4. Удалённый виброизолятор нельзя обновить и нельзя загрузить ему картинку.
+5. Картинка: jpg/png/gif/webp до 5 МБ, имя файла латиницей `vibration_isolator_<id>_<время>.<расш>`,
+   старая картинка из бакета `vibration-isolator` удаляется.
+6. В ответе `image_url` — временная подписанная ссылка MinIO (7 дней).
+
+## Запуск
+```bash
+pip install -r requirements.txt     # добавилась библиотека minio
+docker-compose up -d                # PostgreSQL + Adminer
+# MinIO должен быть запущен (http://localhost:9001), логин/пароль — в .env
+python main.py
+```
+Postman: File → Import → `postman/vibration_isolator.postman_collection.json` — готовые 12 запросов.

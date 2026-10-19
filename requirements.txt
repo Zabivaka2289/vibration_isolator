@@ -3,8 +3,10 @@ uvicorn[standard]
 jinja2
 python-multipart
 aiofiles
-sqlalchemy
+sqlalchemy[asyncio]
+greenlet
 alembic
 asyncpg
 pydantic-settings
 python-dotenv
+minio
