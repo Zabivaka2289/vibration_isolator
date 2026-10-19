@@ -1,6 +1,6 @@
 {# «Добавить» — форма нового виброизолятора. Отправляется POST /add и сохраняется в БД.
    Обязательные поля помечены *, необязательные — подписью «необязательно». #}
-{% extends "base.html" %}
+{% extends "vibration_isolator_base.html" %}
 {% set nav_active = 'add' %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -70,7 +70,7 @@
 <script>
     // Показываем превью выбранного файла ВНУТРИ кнопки, сама кнопка не пропадает.
     // Фото и видео независимы: выбор одного не стирает превью другого.
-    function bindPreview(inputId, boxId, previewId, captionId, label) {
+    function vibrationIsolatorBindPreview(inputId, boxId, previewId, captionId, label) {
         const input = document.getElementById(inputId);
         input.addEventListener('change', function () {
             const file = input.files[0];
@@ -88,7 +88,7 @@
             caption.textContent = label + ' ✓ (заменить)';
         });
     }
-    bindPreview('photoInput', 'photoBox', 'photoPreview', 'photoCaption', 'Фото');
-    bindPreview('videoInput', 'videoBox', 'videoPreview', 'videoCaption', 'Видео');
+    vibrationIsolatorBindPreview('photoInput', 'photoBox', 'photoPreview', 'photoCaption', 'Фото');
+    vibrationIsolatorBindPreview('videoInput', 'videoBox', 'videoPreview', 'videoCaption', 'Видео');
 </script>
 {% endblock %}

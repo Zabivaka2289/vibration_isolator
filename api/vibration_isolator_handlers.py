@@ -27,23 +27,24 @@ from db.session import get_db
 from models.vibration_isolator import VibrationIsolator
 from models.like import Like
 
-router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+vibration_isolator_router = APIRouter()
+vibration_isolator_templates = Jinja2Templates(directory="templates")
 
 # Тестовый пользователь, от имени которого ставятся лайки (users.id = 1)
-CURRENT_USER_ID = 1
+VIBRATION_ISOLATOR_USER_ID = 1
 
 # Куда сохраняются фото/видео, загруженные на странице «Добавить»
-MEDIA_DIR = os.path.join("static", "media")
+# (готовые фото 5 виброизоляторов лежат в MinIO: http://localhost:9000/media/...)
+VIBRATION_ISOLATOR_UPLOAD_DIR = os.path.join("static", "vibration_isolator_uploads")
 
 # Типы виброизоляторов для выпадающего списка
 VIBRATION_ISOLATOR_TYPES = ["Пружинный", "Резинометаллический"]
 
 
 # ---------------------------------------------------------------------------
-# Вспомогательные функции
+# vibration_isolator: Вспомогательные функции
 # ---------------------------------------------------------------------------
-async def get_likes_info(db: AsyncSession):
+async def get_vibration_isolator_likes_info(db: AsyncSession):
     """
     Возвращает:
       likes_count — {vibration_isolator_id: количество лайков}
@@ -57,36 +58,36 @@ async def get_likes_info(db: AsyncSession):
     likes_count = {row[0]: row[1] for row in count_rows.all()}
 
     liked_rows = await db.execute(
-        select(Like.vibration_isolator_id).where(Like.user_id == CURRENT_USER_ID)
+        select(Like.vibration_isolator_id).where(Like.user_id == VIBRATION_ISOLATOR_USER_ID)
     )
     liked_ids = {row[0] for row in liked_rows.all()}
     return likes_count, liked_ids
 
 
-def safe_redirect(next_url: str) -> RedirectResponse:
+def vibration_isolator_safe_redirect(next_url: str) -> RedirectResponse:
     """Редирект только на внутренние адреса сайта (защита от подмены next)."""
     if not next_url or not next_url.startswith("/") or next_url.startswith("//"):
         next_url = "/"
     return RedirectResponse(url=next_url, status_code=303)
 
 
-async def save_upload(file: UploadFile | None) -> str | None:
-    """Сохраняет загруженный файл в static/media и возвращает его адрес (или None)."""
+async def save_vibration_isolator_upload(file: UploadFile | None) -> str | None:
+    """Сохраняет загруженный файл в static/vibration_isolator_uploads и возвращает его адрес (или None)."""
     if file is None or not file.filename:
         return None
     ext = os.path.splitext(file.filename)[1].lower()
     name = f"upload_vibration_isolator_{uuid.uuid4().hex[:8]}{ext}"
-    os.makedirs(MEDIA_DIR, exist_ok=True)
-    with open(os.path.join(MEDIA_DIR, name), "wb") as out:
+    os.makedirs(VIBRATION_ISOLATOR_UPLOAD_DIR, exist_ok=True)
+    with open(os.path.join(VIBRATION_ISOLATOR_UPLOAD_DIR, name), "wb") as out:
         out.write(await file.read())
-    return f"/static/media/{name}"
+    return f"/static/vibration_isolator_uploads/{name}"
 
 
 # ---------------------------------------------------------------------------
-# Плитка (каталог) + поиск — ORM
+# vibration_isolator: Плитка (каталог) + поиск — ORM
 # ---------------------------------------------------------------------------
-@router.get("/")
-async def get_catalog(request: Request, search: str = "", db: AsyncSession = Depends(get_db)):
+@vibration_isolator_router.get("/")
+async def get_vibration_isolator_catalog(request: Request, search: str = "", db: AsyncSession = Depends(get_db)):
     stmt = select(VibrationIsolator).where(VibrationIsolator.is_deleted == False)  # noqa: E712
     if search:
         # ilike — регистронезависимый поиск по части названия (PostgreSQL)
@@ -96,11 +97,11 @@ async def get_catalog(request: Request, search: str = "", db: AsyncSession = Dep
     result = await db.execute(stmt)
     vibration_isolators = result.scalars().all()  # список объектов VibrationIsolator
 
-    likes_count, liked_ids = await get_likes_info(db)
+    likes_count, liked_ids = await get_vibration_isolator_likes_info(db)
 
-    return templates.TemplateResponse(
+    return vibration_isolator_templates.TemplateResponse(
         request=request,
-        name="index.html",
+        name="vibration_isolator_index.html",
         context={
             "title": "Виброизоляция",
             "vibration_isolators": vibration_isolators,
@@ -112,9 +113,9 @@ async def get_catalog(request: Request, search: str = "", db: AsyncSession = Dep
 
 
 # ---------------------------------------------------------------------------
-# Фильтр по жёсткости — ORM
+# vibration_isolator: Фильтр по жёсткости — ORM
 # ---------------------------------------------------------------------------
-@router.get("/filter")
+@vibration_isolator_router.get("/filter")
 async def filter_vibration_isolators(
     request: Request,
     min_stiffness: int = 20,
@@ -129,11 +130,11 @@ async def filter_vibration_isolators(
     )
     result = await db.execute(stmt)
     vibration_isolators = result.scalars().all()
-    likes_count, liked_ids = await get_likes_info(db)
+    likes_count, liked_ids = await get_vibration_isolator_likes_info(db)
 
-    return templates.TemplateResponse(
+    return vibration_isolator_templates.TemplateResponse(
         request=request,
-        name="filter.html",
+        name="vibration_isolator_filter.html",
         context={
             "vibration_isolators": vibration_isolators,
             "min_stiffness": min_stiffness,
@@ -145,10 +146,10 @@ async def filter_vibration_isolators(
 
 
 # ---------------------------------------------------------------------------
-# Лента
+# vibration_isolator: Лента
 # ---------------------------------------------------------------------------
-@router.get("/feed")
-async def get_feed(request: Request, db: AsyncSession = Depends(get_db)):
+@vibration_isolator_router.get("/feed")
+async def get_vibration_isolator_feed(request: Request, db: AsyncSession = Depends(get_db)):
     """
     Открывает ленту: последнюю просмотренную карточку (запоминается в cookie),
     если её нет или она удалена — первую по порядку.
@@ -168,7 +169,7 @@ async def get_feed(request: Request, db: AsyncSession = Depends(get_db)):
     return RedirectResponse(url=f"/vibration_isolator/{active_ids[0]}", status_code=303)
 
 
-@router.get("/vibration_isolator/{vibration_isolator_id}")
+@vibration_isolator_router.get("/vibration_isolator/{vibration_isolator_id}")
 async def get_vibration_isolator_detail(
     request: Request, vibration_isolator_id: int, db: AsyncSession = Depends(get_db)
 ):
@@ -185,9 +186,9 @@ async def get_vibration_isolator_detail(
     ).mappings().fetchone()  # fetchone() — одна строка или None
 
     if row is None:
-        return templates.TemplateResponse(
+        return vibration_isolator_templates.TemplateResponse(
             request=request,
-            name="404.html",
+            name="vibration_isolator_404.html",
             context={"message": "Виброизолятор не найден"},
             status_code=404,
         )
@@ -202,11 +203,11 @@ async def get_vibration_isolator_detail(
     pos = active_ids.index(vibration_isolator_id)
     next_id = active_ids[(pos + 1) % len(active_ids)]
 
-    likes_count, liked_ids = await get_likes_info(db)
+    likes_count, liked_ids = await get_vibration_isolator_likes_info(db)
 
-    response = templates.TemplateResponse(
+    response = vibration_isolator_templates.TemplateResponse(
         request=request,
-        name="vibration_isolator.html",
+        name="vibration_isolator_feed.html",
         context={
             "vibration_isolator": row,
             "next_id": next_id,
@@ -222,9 +223,9 @@ async def get_vibration_isolator_detail(
 
 
 # ---------------------------------------------------------------------------
-# Лайк — ORM
+# vibration_isolator: Лайк — ORM
 # ---------------------------------------------------------------------------
-@router.post("/vibration_isolator/{vibration_isolator_id}/like")
+@vibration_isolator_router.post("/vibration_isolator/{vibration_isolator_id}/like")
 async def like_vibration_isolator(
     vibration_isolator_id: int,
     user_id: int = Form(...),
@@ -245,13 +246,13 @@ async def like_vibration_isolator(
 
     await db.commit()
     # Возвращаем пользователя туда, откуда он нажал (Плитка / Фильтр / Лента)
-    return safe_redirect(next)
+    return vibration_isolator_safe_redirect(next)
 
 
 # ---------------------------------------------------------------------------
-# Мягкое удаление — курсор (сырой SQL)
+# vibration_isolator: Мягкое удаление — курсор (сырой SQL)
 # ---------------------------------------------------------------------------
-@router.post("/vibration_isolator/{vibration_isolator_id}/delete")
+@vibration_isolator_router.post("/vibration_isolator/{vibration_isolator_id}/delete")
 async def delete_vibration_isolator(
     vibration_isolator_id: int,
     next: str = Form("/"),
@@ -267,22 +268,22 @@ async def delete_vibration_isolator(
         {"id": vibration_isolator_id},
     )
     await db.commit()
-    return safe_redirect(next)
+    return vibration_isolator_safe_redirect(next)
 
 
 # ---------------------------------------------------------------------------
-# Добавление — ORM
+# vibration_isolator: Добавление — ORM
 # ---------------------------------------------------------------------------
-@router.get("/add")
-async def get_add_page(request: Request):
-    return templates.TemplateResponse(
+@vibration_isolator_router.get("/add")
+async def get_vibration_isolator_add_page(request: Request):
+    return vibration_isolator_templates.TemplateResponse(
         request=request,
-        name="add.html",
+        name="vibration_isolator_add.html",
         context={"title": "Добавить виброизолятор", "types": VIBRATION_ISOLATOR_TYPES},
     )
 
 
-@router.post("/add")
+@vibration_isolator_router.post("/add")
 async def add_vibration_isolator(
     # Обязательные поля
     title: str = Form(...),
@@ -301,8 +302,8 @@ async def add_vibration_isolator(
         stiffness=stiffness,
         freq=freq,
         description=description.strip() or None,
-        image_url=await save_upload(photo),
-        video_url=await save_upload(video),
+        image_url=await save_vibration_isolator_upload(photo),
+        video_url=await save_vibration_isolator_upload(video),
         is_deleted=False,
     )
     db.add(new_item)

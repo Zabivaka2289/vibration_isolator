@@ -2,7 +2,7 @@
    vibration_isolator — строка из БД (получена курсором по id)
    next_id            — id следующей карточки для кнопки «Далее»
    likes_count / is_liked — лайки из таблицы likes #}
-{% extends "base.html" %}
+{% extends "vibration_isolator_base.html" %}
 {% set nav_active = 'feed' %}
 {% set item = vibration_isolator %}
 
@@ -32,8 +32,8 @@
                 {% endif %}
             </div>
         </div>
-        <button type="button" class="carousel-arrow left" onclick="changeMedia(-1)">‹</button>
-        <button type="button" class="carousel-arrow right" onclick="changeMedia(1)">›</button>
+        <button type="button" class="carousel-arrow left" onclick="vibrationIsolatorChangeMedia(-1)">‹</button>
+        <button type="button" class="carousel-arrow right" onclick="vibrationIsolatorChangeMedia(1)">›</button>
         <div class="carousel-dots" id="carouselDots">
             <span class="active"></span><span></span>
         </div>
@@ -67,7 +67,7 @@
             <span class="desc-short">{{ item.description[:80] }}{% if item.description|length > 80 %}…{% endif %}</span>
             <span class="desc-full">{{ item.description }}</span>
             {% if item.description|length > 80 %}
-            <button type="button" class="desc-more-btn" onclick="toggleDescription(this)">Ещё</button>
+            <button type="button" class="desc-more-btn" onclick="vibrationIsolatorToggleDescription(this)">Ещё</button>
             {% endif %}
         </div>
         {% endif %}
@@ -78,9 +78,9 @@
 
 {% block scripts %}
 <script>
-    // ===== Карусель фото/видео =====
+    // ===== vibration_isolator: Карусель фото/видео =====
     let currentMediaIndex = 0;
-    function changeMedia(direction) {
+    function vibrationIsolatorChangeMedia(direction) {
         currentMediaIndex = (currentMediaIndex + direction + 2) % 2;
         document.getElementById('mediaTrack').style.transform =
             'translateX(-' + (currentMediaIndex * 100) + '%)';
@@ -90,17 +90,17 @@
         if (video) { currentMediaIndex === 1 ? video.play() : video.pause(); }
     }
 
-    // ===== «Ещё» / «Скрыть» для описания =====
-    function toggleDescription(btn) {
+    // ===== vibration_isolator: «Ещё» / «Скрыть» для описания =====
+    function vibrationIsolatorToggleDescription(btn) {
         const opened = btn.parentElement.classList.toggle('open');
         btn.textContent = opened ? 'Скрыть' : 'Ещё';
     }
 
-    // ===== Клавиатура: ↓ — следующая карточка, ←/→ — фото/видео =====
+    // ===== vibration_isolator: Клавиатура: ↓ — следующая карточка, ←/→ — фото/видео =====
     document.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowDown') { window.location.href = '/vibration_isolator/{{ next_id }}'; }
-        if (e.key === 'ArrowLeft') { changeMedia(-1); }
-        if (e.key === 'ArrowRight') { changeMedia(1); }
+        if (e.key === 'ArrowLeft') { vibrationIsolatorChangeMedia(-1); }
+        if (e.key === 'ArrowRight') { vibrationIsolatorChangeMedia(1); }
     });
 </script>
 {% endblock %}

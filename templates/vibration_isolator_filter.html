@@ -1,6 +1,6 @@
 {# Фильтр по жёсткости: GET /filter?min_stiffness=..&max_stiffness=.. #}
-{% extends "base.html" %}
-{% from "_card.html" import vibration_isolator_card %}
+{% extends "vibration_isolator_base.html" %}
+{% from "vibration_isolator_card.html" import vibration_isolator_card %}
 {% set nav_active = 'grid' %}
 
 {% block title %}Фильтр{% endblock %}
@@ -43,7 +43,7 @@
 
 {% block scripts %}
 <script>
-    function toggleDescription(btn) {
+    function vibrationIsolatorToggleDescription(btn) {
         const box = btn.parentElement;
         const opened = box.classList.toggle('open');
         btn.textContent = opened ? 'Скрыть' : 'Ещё';

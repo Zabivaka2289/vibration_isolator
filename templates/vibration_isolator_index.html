@@ -1,6 +1,6 @@
 {# «Плитка» — каталог виброизоляторов с поиском по названию #}
-{% extends "base.html" %}
-{% from "_card.html" import vibration_isolator_card %}
+{% extends "vibration_isolator_base.html" %}
+{% from "vibration_isolator_card.html" import vibration_isolator_card %}
 {% set nav_active = 'grid' %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -35,7 +35,7 @@
 {% block scripts %}
 <script>
     // Кнопка «Ещё» в карточке: показывает / скрывает полное описание
-    function toggleDescription(btn) {
+    function vibrationIsolatorToggleDescription(btn) {
         const box = btn.parentElement;
         const opened = box.classList.toggle('open');
         btn.textContent = opened ? 'Скрыть' : 'Ещё';

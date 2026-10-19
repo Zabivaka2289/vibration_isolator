@@ -23,7 +23,7 @@
         <span class="desc-short">{{ item.description[:60] }}{% if item.description|length > 60 %}…{% endif %}</span>
         <span class="desc-full">{{ item.description }}</span>
         {% if item.description|length > 60 %}
-        <button type="button" class="desc-more-btn" onclick="toggleDescription(this)">Ещё</button>
+        <button type="button" class="desc-more-btn" onclick="vibrationIsolatorToggleDescription(this)">Ещё</button>
         {% endif %}
     </div>
     {% endif %}

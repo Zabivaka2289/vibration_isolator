@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # Файлы, загруженные через страницу «Добавить»
-static/media/upload_*
+static/vibration_isolator_uploads/
 
 # IDE
 .vscode/

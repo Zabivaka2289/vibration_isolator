@@ -24,6 +24,7 @@ alembic upgrade head
 
 # 5. Сайт
 python main.py                   # http://127.0.0.1:8001
+# MinIO с фотографиями (http://localhost:9000) тоже должен быть запущен
 ```
 
 ## Структура проекта
@@ -35,7 +36,7 @@ vibration_isolator/
 │   ├── env.py                — Alembic берёт адрес БД из .env и модели из models/
 │   └── script.py.mako        — шаблон новых миграций
 ├── alembic.ini               — настройки Alembic
-├── api/handlers.py           — все страницы и действия (роуты)
+├── api/vibration_isolator_handlers.py — все страницы и действия (роуты)
 ├── core/config.py            — чтение .env через pydantic-settings
 ├── db/base.py                — базовый класс моделей
 ├── db/session.py             — подключение к БД, сессия на каждый запрос
@@ -44,23 +45,23 @@ vibration_isolator/
 │   ├── user.py               — модель User (таблица users)
 │   └── like.py               — модель Like (таблица likes)
 ├── templates/
-│   ├── base.html             — общий каркас: «телефон» 390×844 + нижнее меню
-│   ├── _card.html            — карточка для Плитки и Фильтра
-│   ├── index.html            — Плитка + поиск
-│   ├── filter.html           — фильтр по жёсткости
-│   ├── vibration_isolator.html — Лента (одна карточка на экран)
-│   ├── add.html              — Добавить (сохранение в БД)
-│   └── 404.html              — «не найдено»
+│   ├── vibration_isolator_base.html   — общий каркас: «телефон» 390×844 + нижнее меню
+│   ├── vibration_isolator_card.html   — карточка для Плитки и Фильтра
+│   ├── vibration_isolator_index.html  — Плитка + поиск
+│   ├── vibration_isolator_filter.html — фильтр по жёсткости
+│   ├── vibration_isolator_feed.html   — Лента (одна карточка на экран)
+│   ├── vibration_isolator_add.html    — Добавить (сохранение в БД)
+│   └── vibration_isolator_404.html    — «не найдено»
 ├── static/
-│   ├── css/style.css
+│   ├── css/vibration_isolator_style.css
 │   ├── img/                  — иконки и заглушки «нет фото / нет видео»
-│   └── media/                — фото и видео виброизоляторов vibration_isolator_N.png/.mp4
+│   └── vibration_isolator_uploads/ — файлы, загруженные через «Добавить» (создаётся сама)
 ├── sql/seed.sql              — начальные данные
 ├── er/                       — ER-диаграмма (StarUML .mdj + PDF/PNG под A4)
 ├── docker-compose.yml
 ├── .env / .env.example
 ├── .gitignore
-├── main.py
+├── main.py                 — приложение vibration_isolator_app
 └── requirements.txt
 ```
 
@@ -107,21 +108,27 @@ vibration_isolator/
 - папка проекта `vibration_isolator/`;
 - модель `VibrationIsolator`, файл `models/vibration_isolator.py`, таблица `vibration_isolators`,
   внешний ключ `likes.vibration_isolator_id`;
-- шаблон Ленты `templates/vibration_isolator.html` (был `hotel.html`);
+- шаблоны `templates/vibration_isolator_*.html` (Лента — `vibration_isolator_feed.html`, был `hotel.html`);
+- файл роутов `api/vibration_isolator_handlers.py`, объекты `vibration_isolator_router`,
+  `vibration_isolator_templates`, `vibration_isolator_app`; все функции-обработчики содержат
+  `vibration_isolator` (`get_vibration_isolator_catalog`, `get_vibration_isolator_feed` …);
+- JS-функции `vibrationIsolatorChangeMedia`, `vibrationIsolatorToggleDescription`,
+  `vibrationIsolatorBindPreview`; стили `vibration_isolator_style.css`;
+- каждый раздел (отдел) кода подписан `vibration_isolator: …` — в Python, CSS и JS;
 - адреса `/vibration_isolator/{id}`, `/vibration_isolator/{id}/like`, `/vibration_isolator/{id}/delete`
   (было `/isolator/{id}`);
 - переменные в коде и шаблонах: `vibration_isolators`, `vibration_isolator_id`;
 - БД `vibration_isolator_db`, пользователь `vibration_isolator_user`, контейнеры
   `vibration_isolator_postgres` / `vibration_isolator_adminer`, том `vibration_isolator_pgdata`;
-- медиафайлы `static/media/vibration_isolator_1.png … _5.png` (были `vibro1.png …`);
+- фото и видео 5 исходных записей берутся из MinIO (`http://localhost:9000/media/vibro1.png …`);
 - cookie последней карточки `last_vibration_isolator_id`.
 
 ### 2. Фиксированный размер телефона, без адаптивности
 Раньше страница растягивалась на весь экран (`width: 100vw; height: 100vh`) и были `@media`-правила.
 Теперь всё содержимое лежит в блоке `.phone` фиксированного размера **390 × 844 px**
-(`templates/base.html`, `static/css/style.css`). Все `@media` удалены, нижнее меню и шапки
+(`templates/vibration_isolator_base.html`, `static/css/vibration_isolator_style.css`). Все `@media` удалены, нижнее меню и шапки
 позиционируются внутри «телефона», а не по окну браузера. Размер меняется в одном месте —
-переменные `--phone-w` / `--phone-h` в начале `style.css`.
+переменные `--phone-w` / `--phone-h` в начале `vibration_isolator_style.css`.
 
 ### 3. Лента: описание справа
 Блок с названием, жёсткостью, частотой, текстом и типом (`.description-overlay`) прижат к правому
@@ -137,7 +144,7 @@ vibration_isolator/
 - Иконки нижнего меню сделаны SVG (цвет `currentColor`), поэтому видны и у активной,
   и у неактивной кнопки. Раньше на каждой странице подключался CSS с разной версией
   (`style.css?v=2`, `?v=7`, `?v=8`), и на «Добавить» браузер брал старый файл из кэша —
-  теперь один общий `base.html` и одна версия стилей.
+  теперь один общий `vibration_isolator_base.html` и одна версия стилей.
 
 ### 5. ER-диаграмма (StarUML)
 Файл `er/vibration_isolator_er.mdj` — открывается в StarUML.
