@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: vibration_isolator_password
       POSTGRES_DB: vibration_isolator_db
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       # Данные БД хранятся в томе, чтобы не пропадали при перезапуске контейнера
       - vibration_isolator_pgdata:/var/lib/postgresql/data
