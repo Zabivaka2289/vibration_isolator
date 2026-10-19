@@ -342,10 +342,10 @@ body {
 .add-section-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; }
 .optional { font-size: 10px; font-weight: 400; color: #888; margin-left: 4px; }
 
-.add-media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.add-media-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .add-media-box {
     position: relative;
-    aspect-ratio: 1 / 1;
+    height: 150px;
     background: var(--bg);
     border: 2px dashed #3A3A3A;
     border-radius: 10px;
